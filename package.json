@@ -1,0 +1,48 @@
+{
+  "name": "tutogeeks-backend",
+  "version": "1.0.0",
+  "description": "REST API for TutoGeeks CMS app",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "watchify app.js -d -o /",
+    "app": "nodemon app.js",
+    "start": "npm run app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dcdevs/tutogeeks-backend.git"
+  },
+  "keywords": [
+    "NodeJs",
+    "MongoDb",
+    "Tutorials",
+    "Geeks",
+    "Angular",
+    "JS"
+  ],
+  "author": "DcDevs",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dcdevs/tutogeeks-backend/issues"
+  },
+  "homepage": "https://github.com/dcdevs/tutogeeks-backend#readme",
+  "dependencies": {
+    "async": "^2.0.0-rc.4",
+    "body-parser": "^1.15.1",
+    "express": "^4.13.4",
+    "express-session": "^1.13.0",
+    "express-validator": "^2.20.4",
+    "i18n": "^0.8.2",
+    "lodash": "^4.11.2",
+    "moment": "^2.13.0",
+    "mongoose": "^4.4.15",
+    "mongoose-query-paginate": "^1.0.1",
+    "morgan": "^1.7.0",
+    "nodemon": "^1.9.2",
+    "passport": "^0.3.2",
+    "q": "^1.4.1",
+    "request": "^2.72.0",
+    "watchify": "^3.7.0"
+  }
+}
