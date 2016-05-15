@@ -4,7 +4,11 @@ var express = require('express'),
   i18n = require('i18n'),
   bodyParser = require('body-parser'),
   expressValidator = require('express-validator'),
-  session = require('express-session');
+  session = require('express-session'),
+  mongoose = require('./common/connection');
+
+// App router
+var Router = require('./app/routes/routes');
 
 
 // Set logger
