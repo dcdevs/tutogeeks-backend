@@ -5,6 +5,7 @@ var config = {
   // local config
   local: {
     tokenSecret: 'pdysgd62cl3car1kyb9o6qhdactmd9zp3dnp14i',
+    port: 8080,
     db: {
       password: '',
       username: '',
