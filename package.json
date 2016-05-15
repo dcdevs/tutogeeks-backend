@@ -29,7 +29,9 @@
   "homepage": "https://github.com/dcdevs/tutogeeks-backend#readme",
   "dependencies": {
     "async": "^2.0.0-rc.4",
+    "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.15.1",
+    "connect-mongo": "^1.2.0",
     "express": "^4.13.4",
     "express-session": "^1.13.0",
     "express-validator": "^2.20.4",
@@ -41,6 +43,7 @@
     "morgan": "^1.7.0",
     "nodemon": "^1.9.2",
     "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
     "q": "^1.4.1",
     "request": "^2.72.0",
     "watchify": "^3.7.0"
