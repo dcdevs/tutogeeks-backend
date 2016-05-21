@@ -39,4 +39,15 @@ var UsersSchema = new Schema({
 });
 
 
+// generating a hash
+UsersSchema.methods.generateHash = function(password) {
+  return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
+
+// checking if password is valid
+UsersSchema.methods.validPassword = function(password) {
+  return bcrypt.compareSync(password, this.password);
+};
+
+
 module.exports = mongoose.model('User', UsersSchema);
