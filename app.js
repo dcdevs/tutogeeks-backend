@@ -8,8 +8,9 @@ var express = require('express'),
   MongoStore = require('connect-mongo')(session),
   mongoose = require('./common/connection'),
   passport = require('passport'),
-  config = require('./config/config');
-
+  config = require('./config/config'),
+  expressValidator = require('express-validator'),
+  sanitizer = require('./app/middlewares/sanitize');
 
 // Set logger
 app.use(morgan('dev'));
@@ -18,6 +19,8 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 
+app.use(expressValidator());
+app.use(sanitizer()); // sanitize body, params and query
 
 // set express session
 app.use(session({
