@@ -1,13 +1,16 @@
 var express = require('express');
 var router = express.Router();
 var _ = require('lodash');
+var Utils = require('../utils/utils');
+var middleware = require('../middlewares/middlewares');
 
 var User = require('../../common/models/users');
+var Passport = require('passport');
 
 module.exports = router;
 
 
-router.post('/signUp', function(req, res) {
+router.post('/signUp', function signUp(req, res) {
 
   req.checkBody('username', { code: 000, message: req.tr('users.required.username') }).notEmpty();
   req.checkBody('password', { code: 000, message: req.tr('users.required.password') }).notEmpty();
@@ -59,7 +62,7 @@ router.post('/signUp', function(req, res) {
           return res.status(202)
             .send({ success: false, data: err });
 
-        return res.status(200).send({ success: true, data: created });
+        return res.status(200).send({ success: true });
       })
 
     }
@@ -74,4 +77,58 @@ router.post('/signUp', function(req, res) {
 
   });
 
-})
+});
+
+
+router.post('/signIn', function signIn(req, res) {
+
+  req.checkBody('username', { code: 111, message: 'username required' }).notEmpty();
+  req.checkBody('password', { code: 222, message: 'password required' }).notEmpty();
+
+  var errors = req.validationErrors();
+
+  if (errors)
+    return res.status(202)
+      .send({
+        success: false,
+        key: true,
+        data: errors,
+        message: 'invalid params'
+      });
+
+  var params = req.body;
+  User.findOne({ $or: [{ username: params.username }, { email: params.username }] }, function(err, user) {
+
+    if (err)
+      return res.status(202)
+        .send({ success: false, data: err });
+
+    if (_.isNull(user))
+      return res.status(202)
+        .send({ success: false, key: true, message: 'this user did not exists' });
+
+    //pass db info to passport
+    req.tryTologin = user;
+
+    //validate password and create session
+    Passport.authenticate('local', function(err, logged, info) {
+
+      if (!logged)
+        return res.status(202)
+          .send({ success: false, key: true, message: info });
+
+      //log user
+      req.logIn(logged, function(err) {
+        console.log(err);
+        if (!err){
+
+          var userToken = middleware.createToken(user);
+
+          return res.send({ success: true, token: userToken });
+        }
+      });
+
+    })(req, res);
+
+  });
+});
