@@ -12,6 +12,7 @@ var UsersSchema = new Schema({
   activated: { type: Boolean, default: false },
   type: { type: String, enum: ['owner', 'guest', 'partner'] },
   banned: { type: Boolean, default: false },
+  token: {type: String},
   services: {}, // TODO , set by ID or set object with all the properties
   profile: {
     firstName: { type: String, required: true },
