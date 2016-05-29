@@ -1,16 +1,19 @@
-var User = require('../../common/models/users'),
-    _ = require('lodash');
+var express = require('express');
+var router = express.Router();
+var _ = require('lodash');
+var Utils = require('../utils/utils');
+var User = require('../../common/models/users');
+var middleware = require('../middlewares/middlewares');
 
-module.exports = function(app){
+module.exports = router;
 
 
-  app.get('/', function(req, res){
-    return res.status(200).send({success: true, data: []})
-  })
-  return app;
-  // return Router;
-};
+router.get('/', middleware.verify, function(req, res) {
+  res.send({ success: true, data: [] });
+})
 
-// Router.get('/', function(req, res){
 
-// });
+router.post('/', middleware.verify, function(req, res) {
+
+
+})
