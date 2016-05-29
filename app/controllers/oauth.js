@@ -3,6 +3,7 @@ var router = express.Router();
 var _ = require('lodash');
 var Utils = require('../utils/utils');
 var middleware = require('../middlewares/middlewares');
+var moment = require('moment');
 
 var User = require('../../common/models/users');
 var Passport = require('passport');
@@ -58,7 +59,7 @@ router.post('/signUp', function signUp(req, res) {
 
     var saveUser = new User({
       username: params.username,
-      password: Uti1ls.generateHash(params.password),
+      password: Utils.generateHash(params.password),
       email: params.email,
       profile: {
         firstName: params.firstName,
@@ -66,18 +67,25 @@ router.post('/signUp', function signUp(req, res) {
       }
     });
 
+    var tokenExpire = moment().add(15, "days").utc().format("X");
+    var confirmToken = middleware.confirmToken(req.body.email);
+
+    saveUser.tokens = {
+      confirmation: confirmToken,
+      expires: tokenExpire
+    };
 
     return saveUser.save(function(err, created) {
       if (err)
         return res.status(202)
           .send({ success: false, data: err });
 
+
+      //HERE MAIL HANDLER LOGIC
+
       return res.status(200).send({ success: true });
     });
-
-
   });
-
 });
 
 
@@ -108,6 +116,12 @@ router.post('/signIn', function signIn(req, res) {
       return res.status(202)
         .send({ success: false, key: true, message: 'this user did not exists' });
 
+
+    if (!user.activated)
+      return res.send(202)
+        .send({ success: false, key: true, message: 'this user is not activated' });
+
+
     //pass db info to passport
     req.tryTologin = user;
 
@@ -126,7 +140,9 @@ router.post('/signIn', function signIn(req, res) {
             .send({ success: false, key: true, message: err });
 
         var userToken = middleware.createToken(user);
-        user.token = userToken;
+        user.tokens = {
+          token: userToken
+        };
 
         user.save();
 
@@ -136,5 +152,51 @@ router.post('/signIn', function signIn(req, res) {
 
     })(req, res);
 
+  });
+});
+
+
+router.post('/confirm/:confirmToken', function confirmToken(req, res) {
+
+  req.checkParams('confirmToken', { code: 111, message: 'confirmToken requiered' }).notEmpty();
+
+  var errors = req.validationErrors();
+
+  if (errors)
+    return res.status(202)
+      .send({
+        success: false,
+        key: true,
+        data: errors,
+        message: 'invalid params'
+      });
+
+  User.findOne({ 'tokens.confirmation': req.params.confirmToken, activated: false }, function(err, user) {
+
+    if (err)
+      return res.status(202)
+        .send({ success: false, data: err });
+
+    if (_.isNull(user) || _.isUndefined(user))
+      return res.status(202)
+        .send({ success: false, key: true, message: 'invalid token' });
+
+
+    var expirationConfirm = moment().utc().format('X');
+
+    if (expirationConfirm > user.tokens.expires)
+      return res.status(202)
+        .send({ success: false, key: true, message: 'token expired' });
+
+    User.update({ email: user.email }, { activated: true, $unset: { tokens: 1 } }, function(err, data) {
+
+      if (err)
+        return res.status(202)
+          .send({ success: false, key: true, data: err });
+
+      return res.status(200)
+        .send({ success: true, data: 'user activated' });
+
+    });
   });
 });
