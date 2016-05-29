@@ -40,40 +40,41 @@ router.post('/signUp', function signUp(req, res) {
       return res.status(202)
         .send({ success: false, data: err });
 
-    if (_.isNull(user)) {
+    if (!_.isNull(user)) {
 
-      if (params.password !== params.passwordConfirm)
+      if (user.username === params.username)
         return res.status(202)
-          .send({ success: false, key: true, message: 'password did not match' });
+          .send({ success: false, key: true, message: 'username already exists' });
 
-      var saveUser = new User({
-        username: params.username,
-        password: Utils.generateHash(params.password),
-        email: params.email,
-        profile: {
-          firstName: params.firstName,
-          lastName: params.lastName
-        }
-      });
-
-
-      return saveUser.save(function(err, created) {
-        if (err)
-          return res.status(202)
-            .send({ success: false, data: err });
-
-        return res.status(200).send({ success: true });
-      })
+      if (user.email === params.email)
+        return res.status(202)
+          .send({ success: false, key: true, message: 'email already exists' });
 
     }
 
-    if (user.username === params.username)
+    if (params.password !== params.passwordConfirm)
       return res.status(202)
-        .send({ success: false, key: true, message: 'username already exists' });
+        .send({ success: false, key: true, message: 'password did not match' });
 
-    if (user.email === params.email)
-      return res.status(202)
-        .send({ success: false, key: true, message: 'email already exists' });
+    var saveUser = new User({
+      username: params.username,
+      password: Uti1ls.generateHash(params.password),
+      email: params.email,
+      profile: {
+        firstName: params.firstName,
+        lastName: params.lastName
+      }
+    });
+
+
+    return saveUser.save(function(err, created) {
+      if (err)
+        return res.status(202)
+          .send({ success: false, data: err });
+
+      return res.status(200).send({ success: true });
+    });
+
 
   });
 
@@ -119,13 +120,18 @@ router.post('/signIn', function signIn(req, res) {
 
       //log user
       req.logIn(logged, function(err) {
-        console.log(err);
-        if (!err){
 
-          var userToken = middleware.createToken(user);
+        if (err)
+          return res.status(202)
+            .send({ success: false, key: true, message: err });
 
-          return res.send({ success: true, token: userToken });
-        }
+        var userToken = middleware.createToken(user);
+        user.token = userToken;
+
+        user.save();
+
+        return res.send({ success: true, token: userToken });
+
       });
 
     })(req, res);
