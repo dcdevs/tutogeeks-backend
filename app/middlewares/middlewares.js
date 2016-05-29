@@ -4,7 +4,7 @@ var Passport = require('passport');
 var moment = require('moment');
 var jwt = require('jwt-simple');
 
-var Auth = module.exports = function(_app) {
+var Auth = module.exports = function() {
   return Auth;
 };
 
@@ -40,47 +40,72 @@ Auth.verify = function verify(req, res, next) {
         description: 'header_required'
       });
 
-  var token = req.headers.authorization.split(" ")[1];
+  var token = req.headers.authorization;
 
-  if (token) {
+  if (!token) {
 
-    try {
-      var payload = jwt.decode(token, config.secretToken);
-    } catch (e) {
+    return res
+      .status(401)
+      .send({
+        code: 103,
+        success: false,
+        key: true,
+        message: req.tr('token_invalid'),
+        description: req.tr('incorrect_token')
+      });
+  }
+
+  try {
+    var payload = jwt.decode(token, config.tokenSecret);
+  } catch (e) {
+
+    var message = e.message;
+
+    if (message.match('expired')) {
       return res
         .status(401)
         .send({
-          code: 101,
+          code: 102,
           success: false,
           key: true,
-          message: req.trans('token_invalid'),
-          description: req.trans('incorrect_token')
+          message: 'expired',
+          description: 'token expired'
         });
     }
 
-  } else {
+    return res
+      .status(401)
+      .send({
+        code: 103,
+        success: false,
+        key: true,
+        message: req.tr('token_invalid'),
+        description: req.tr('incorrect_token')
+      });
+  }
 
+  if (req.user._id.toString() !== payload.sub)
+    return res
+      .status(401)
+      .send({
+        code: 105,
+        success: false,
+        key: true,
+        message: req.tr('token_invalid'),
+        description: req.tr('incorrect_token')
+      });
+
+  if (payload.exp <= moment().unix())
     return res
       .status(401)
       .send({
         code: 102,
         success: false,
         key: true,
-        message: req.trans('token_invalid'),
-        description: req.trans('incorrect_token')
+        message: req.tr('invalid_header'),
+        description: req.tr('token_expired_message')
       });
-  }
 
-  if (payload.exp <= moment().unix()) {
-    return res
-      .status(401)
-      .send({
-        code: 102,
-        success: false,
-        key: true,
-        message: req.trans('invalid_header'),
-        description: req.trans('token_expired_message')
-      });
-  }
-  console.log(req.user);
+
+  next();
 }
