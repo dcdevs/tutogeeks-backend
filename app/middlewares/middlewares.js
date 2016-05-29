@@ -8,6 +8,10 @@ var Auth = module.exports = function() {
   return Auth;
 };
 
+/**
+ * Create log in user token
+ * @param  {Object} user [User object]
+ */
 Auth.createToken = function(user) {
 
   var payload = {
@@ -19,6 +23,25 @@ Auth.createToken = function(user) {
   return jwt.encode(payload, config.tokenSecret);
 };
 
+/**
+ * Create token for email confirmation
+ * @param  {String} email [User email]
+ */
+Auth.confirmToken = function(email) {
+
+  var payload = {
+    sub : email,
+    iat: moment().unix(),
+    exp: moment().add(15, "days").unix()
+  };
+
+  return jwt.encode(payload, config.tokenSecret);
+};
+
+/**
+ * Decode log in user token
+ * and validate if is a valid one
+ */
 Auth.verify = function verify(req, res, next) {
 
   if (!req.headers.authorization)
@@ -108,4 +131,6 @@ Auth.verify = function verify(req, res, next) {
 
 
   next();
-}
+};
+
+
